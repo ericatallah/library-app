@@ -62,6 +62,30 @@ header h1 a:hover {
 
 #library-stats {
     margin: 1rem 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+#library-stats > div {
+    width: 49%;
+}
+
+#library-stats .books-by-type {
+    justify-content: flex-end;
+    display: flex;
+    align-items: center;
+}
+
+#library-stats .books-by-type label {
+    margin-right: 10px;
+}
+
+#library-stats .books-by-type select {
+    width: 150px;
+}
+
+#library-stats strong {
+    font-size: 1.25rem;
 }
 
 #collections > div {
@@ -216,6 +240,21 @@ footer small img {
     border-radius: 20px;
 }
 /* end new stuff.... */
+
+@media (max-width: 767px) {
+    #library-stats {
+        display: block;
+    }
+
+    #library-stats > div {
+        width: 100%;
+    }
+
+    #library-stats .books-by-type {
+        margin: 1.2rem 0;
+        justify-content: flex-start;
+    }
+}
 
 @media (max-width: 650px) {
     h1 {

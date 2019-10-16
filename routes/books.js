@@ -2,23 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fetch = require('node-fetch');
 const pool = require('../db');
-
-const retrieveBooksSql = 
-    `
-    SELECT 
-        book.id,
-        book.author,
-        book.title,
-        book_type.type,
-        book_sub_type.sub_type,
-        book_location.location,
-        book_language.language
-    FROM book
-    INNER JOIN book_type ON book.book_type_id = book_type.id
-    INNER JOIN book_sub_type ON book.book_sub_type_id = book_sub_type.id
-    INNER JOIN book_location ON book.book_location_id = book_location.id
-    INNER JOIN book_language ON book.book_language_id = book_language.id
-    `;
+const constants = require('../utils');
 
 const getJson = (sqlResult) => {
     const jsonArr = [];
@@ -38,20 +22,39 @@ const getJson = (sqlResult) => {
 };
 
 router.get('/', async (req, res) => {
-    const sql = `${retrieveBooksSql} LIMIT 30;`;
+    const sql = `${constants.retrieveBooksSql} LIMIT 30;`;
     
     let err;
-    const count = await pool.query('SELECT COUNT(id) FROM book;');
+    const countResult = await pool.query(constants.GET_BOOKS_COUNT).catch(e => err = e);
+    const count = countResult[0]['COUNT(id)'];
+    const byTypeCountResult = await pool.query(`SELECT COUNT(id) FROM book WHERE book_type_id = 1;`).catch(e => err = e);
+    const byTypeCount = byTypeCountResult[0]['COUNT(id)'];
+    const types = await pool.query(constants.GET_TYPES).catch(e => err = e);
     const books = await pool.query(sql).catch(e => err = e);
 
-    console.log('count: ', count[0], count['COUNT(id)'], count[0]['COUNT(id)']);
     if (err) {
         const message = 'There was an error retrieving your books, please reload this page.';
         const messageType = 'danger';
         console.error('Sql error: ', err);
         res.render('books', { message, messageType });
     } else {
-        res.render('books', { books, count: count[0]['COUNT(id)'] });
+        res.render('books', { books, count, types, byTypeCount });
+    }
+});
+
+router.get('/booksbytype/:typeid', async (req, res) => {
+    const id = pool.escape(req.params.typeid);
+    let err;
+    const count = await pool.query(`SELECT COUNT(id) FROM book WHERE book_type_id = ${id};`).catch(e => err = e);
+    //const books = await pool.query(sql).catch(e => err = e);
+
+    if (err) {
+        const message = 'There was an error retrieving your books, please reload this page.';
+        const messageType = 'danger';
+        console.error('Sql error: ', err);
+        res.status(500).json({ message, messageType });
+    } else {
+        res.status(200).json({ count: count[0]['COUNT(id)'] });
     }
 });
 
@@ -65,20 +68,26 @@ router.get('/searchbooks', async (req, res) => {
         res.render('books', { message, messageType });
     } else {
         const sql = 
-            `${retrieveBooksSql}
+            `${constants.retrieveBooksSql}
             WHERE
                 book.author LIKE ${s} OR book.title LIKE ${s} OR book_type.type LIKE ${s} OR book_sub_type.sub_type LIKE ${s} OR book_language.language LIKE ${s} OR book_location.location LIKE ${s} ORDER BY book_type.type, book_sub_type.sub_type, book.author`;
 
         let err;
-        let booksResult = await pool.query(sql).catch(e => err = e);
-        let books = getJson(booksResult);
+        const booksResult = await pool.query(sql).catch(e => err = e);
+        const books = getJson(booksResult);
+
+        const countResult = await pool.query(constants.GET_BOOKS_COUNT).catch(e => err = e);
+        const count = countResult[0]['COUNT(id)'];
+        const types = await pool.query(constants.GET_TYPES).catch(e => err = e);
+        const byTypeCountResult = await pool.query(`SELECT COUNT(id) FROM book WHERE book_type_id = 1;`).catch(e => err = e);
+        const byTypeCount = byTypeCountResult[0]['COUNT(id)'];
         
         if (err) {
             message = 'There was an error with that search, please try again.';
             console.error('Sql error: ', err);
             res.render('books', { message, messageType });
         } else {
-            res.render('books', { books });
+            res.render('books', { books, count, types, byTypeCount });
         }
     }
 });

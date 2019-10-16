@@ -1,5 +1,19 @@
 <div id="library-stats">
-    <strong><em>Total books:</em> {{count}}</strong>
+    <div>
+        <em>Total books in library:</em> 
+        <strong>{{count}}</strong>
+    </div>
+    <div class="books-by-type">
+        <label for="type-count"><em>Total books by type:</em> 
+        <strong id="books-by-type-count">{{byTypeCount}}</strong></label>
+        <select id="type-count" name="type-count" class="form-control">
+            {{#if types}}
+            {{#each types}}
+            <option value="{{id}}">{{type}}</option>
+            {{/each}}
+            {{/if}}
+        </select>
+    </div>
 </div>
 
 <div class="search-form-container margin-bottom">
