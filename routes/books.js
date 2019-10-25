@@ -4,6 +4,8 @@ const fetch = require('node-fetch');
 const pool = require('../db');
 const constants = require('../utils');
 
+let cached_count = 0;
+
 const getJson = (sqlResult) => {
     const jsonArr = [];
 
@@ -26,7 +28,7 @@ router.get('/', async (req, res) => {
     
     let err;
     const countResult = await pool.query(constants.GET_BOOKS_COUNT).catch(e => err = e);
-    const count = countResult[0]['COUNT(id)'];
+    cached_count = countResult[0]['COUNT(id)'];
     const byTypeCountResult = await pool.query(`SELECT COUNT(id) FROM book WHERE book_type_id = 1;`).catch(e => err = e);
     const byTypeCount = byTypeCountResult[0]['COUNT(id)'];
     const types = await pool.query(constants.GET_TYPES).catch(e => err = e);
@@ -38,15 +40,17 @@ router.get('/', async (req, res) => {
         console.error('Sql error: ', err);
         res.render('books', { message, messageType });
     } else {
-        res.render('books', { books, count, types, byTypeCount });
+        res.render('books', { books, count: cached_count, types, byTypeCount });
     }
 });
 
 router.get('/booksbytype/:typeid', async (req, res) => {
     const id = pool.escape(req.params.typeid);
+    const sql = `${constants.retrieveBooksSql} WHERE book_type_id = ${id};`;
     let err;
-    const count = await pool.query(`SELECT COUNT(id) FROM book WHERE book_type_id = ${id};`).catch(e => err = e);
-    //const books = await pool.query(sql).catch(e => err = e);
+    const count = cached_count || await pool.query(constants.GET_BOOKS_COUNT).catch(e => err = e);
+    const books = await pool.query(sql).catch(e => err = e);
+    const types = await pool.query(constants.GET_TYPES).catch(e => err = e);
 
     if (err) {
         const message = 'There was an error retrieving your books, please reload this page.';
@@ -54,7 +58,7 @@ router.get('/booksbytype/:typeid', async (req, res) => {
         console.error('Sql error: ', err);
         res.status(500).json({ message, messageType });
     } else {
-        res.status(200).json({ count: count[0]['COUNT(id)'] });
+        res.render('books', { books, count, types, byTypeCount: books.length, selected_book_type_id: +req.sanitize(req.params.typeid) });
     }
 });
 

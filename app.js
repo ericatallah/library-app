@@ -3,9 +3,12 @@ const bodyParser = require('body-parser');
 const hbs = require('express-handlebars');
 const hbsHelpers = require('./views/helpers');
 const app = express();
+const expressSanitizer = require('express-sanitizer');
 const PORT = process.env.PORT || 5000;
 
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(expressSanitizer());
 
 // setup express routes
 const mainRoutes = require('./routes');
@@ -19,7 +22,6 @@ app.use('/books', booksRoutes);
 app.use('/music', musicRoutes);
 app.use('/movies', moviesRoutes);
 app.use('/comics', comicsRoutes);
-
 
 // serve static assets in /public directory as /static route
 app.use('/static', express.static('public'));

@@ -119,13 +119,13 @@ $('#removeBookConfirm').on('click', e => {
 const $byTypeCount = $('#books-by-type-count');
 $('#type-count').on('change', async function () {
     const id = $(this).val();
-    
-    const result = await fetch(`/books/booksbytype/${id}`, {
+    window.location.href = `/books/booksbytype/${id}`;
+  /* const result = await fetch(`/books/booksbytype/${id}`, {
         'headers': {
             'Response-Type': 'application/json'
         }
     });
     const count = await result.json();
 
-    $byTypeCount.text(count.count);
+    $byTypeCount.text(count.count);*/
 });
