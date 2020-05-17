@@ -2,24 +2,28 @@ require('../css/styles.css');
 const $ = require('jquery');
 import 'bootstrap/dist/js/bootstrap.bundle';
 const Utilities = require('./utilities');
+let $header;
+let $libraryStats;
 
 // Remove any visible alerts on page load
 window.onload = () => {
     Utilities.removeAlert();
+    $header = $('header');
+    $libraryStats = $('#library-stats');
+    $(document).trigger('scroll');
 };
 
 // Start: sticky search box functionality
 $(document).scroll(() => {
-    let scrollTop = $(document).scrollTop();
+    const scrollTop = $(document).scrollTop();
+    const offsetHeight = $header.outerHeight() + $libraryStats.outerHeight() + 25; // plus extra padding
 
-    if (scrollTop > 175) {
+    if (scrollTop > offsetHeight) {
         Utilities.searchBooksForm.addClass('sticky');
     } else {
         Utilities.searchBooksForm.removeClass('sticky');
     }
 });
-
-$(document).trigger('scroll');
 // End: sticky search box functionality
 
 const removeBook = async elem => {
