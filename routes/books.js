@@ -77,7 +77,13 @@ router.get('/searchbooks', async (req, res) => {
         const sql = 
             `${constants.retrieveBooksSql}
             WHERE
-                book.author LIKE ${s} OR book.title LIKE ${s} OR book_type.type LIKE ${s} OR book_sub_type.sub_type LIKE ${s} OR book_language.language LIKE ${s} OR book_location.location LIKE ${s} ORDER BY book_type.type, book_sub_type.sub_type, book.author`;
+                book.author LIKE ${s} OR 
+                book.title LIKE ${s} OR 
+                book_type.type LIKE ${s} OR 
+                book_sub_type.sub_type LIKE ${s} OR 
+                book_language.language LIKE ${s} OR 
+                book_location.location LIKE ${s} ORDER BY 
+                book_type.type, book_sub_type.sub_type, title`;
 
         let err;
         const booksResult = await pool.query(sql).catch(e => err = e);
